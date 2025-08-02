@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -86,6 +87,57 @@ func main() {
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(titleBanner, 5, 0, false).
 		AddItem(mainBody, 0, 1, false)
+	// -----------------------------------------------------------------------------------------------
+	//				HANDLING WIDGET HIGHLIGHT AND NAVIGATION
+	// -----------------------------------------------------------------------------------------------
+
+	// Slice of widgets for indexed access
+	widgets := []tview.Primitive{
+		w_calendar,    // index 0 = key '1'
+		w_courses,     // index 1 = key '2'
+		w_todo,        // index 2 = key '3'
+		w_schedule,    // index 3 = key '4'
+		w_assignments, // index 4 = key '5'
+	}
+
+	// Focused on Calendar by default (upon entering application)
+	focusIndex := 0
+
+	// Anonymous function to change both focus and color of chosen widget
+	updateFocus := func(index int) {
+
+		for i, w := range widgets {
+			if box, ok := w.(*tview.Box); ok {
+				if i == index {
+					box.SetBorderColor(tcell.ColorSpringGreen)
+					box.SetTitleColor(tcell.ColorSpringGreen)
+					box.SetBorderAttributes(tcell.AttrBold)
+				} else {
+					box.SetBorderColor(tcell.ColorWhite)
+					box.SetTitleColor(tcell.ColorWhite)
+					box.SetBorderAttributes(tcell.AttrNone)
+				}
+			}
+		}
+	}
+
+	// Focusing on other widgets indicated by their corresponding numbers
+	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyRune:
+			switch event.Rune() {
+			case '1', '2', '3', '4', '5':
+				focusIndex = int(event.Rune() - '1')
+				app.SetFocus(widgets[focusIndex])
+				updateFocus(focusIndex)
+			}
+		}
+		return event
+	})
+
+	// -----------------------------------------------------------------------------------------------
+	//				START-OF-PROGRAM ERROR HANDLING
+	// -----------------------------------------------------------------------------------------------
 
 	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
 		panic(err)
