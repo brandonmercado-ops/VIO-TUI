@@ -16,31 +16,31 @@ func main() {
 	// !! widget var names are prefixed with "w_"
 
 	// Calendar App
-	w_calendar := tview.NewBox().SetBorder(true).SetTitle("Left (1/2 x width of Top)")
+	w_calendar := tview.NewBox().SetBorder(true).SetTitle("[ 1 ]")
 	w_calendar_fixed_size := 0
 	w_calendar_proportion := 2
 	w_calendar_focus := true // App to be focues on calendar widget on startup
 
 	// School Courses App
-	w_courses := tview.NewBox().SetBorder(true).SetTitle("Top")
+	w_courses := tview.NewBox().SetBorder(true).SetTitle("[ 2 ]")
 	w_courses_fixed_size := 0
 	w_courses_proportion := 1
 	w_courses_focus := false
 
 	// Todo List App
-	w_todo := tview.NewBox().SetBorder(true).SetTitle("Top")
+	w_todo := tview.NewBox().SetBorder(true).SetTitle("[ 3 ]")
 	w_todo_fixed_size := 0
 	w_todo_proportion := 1
 	w_todo_focus := false
 
 	// Schedule App
-	w_schedule := tview.NewBox().SetBorder(true).SetTitle("Top")
+	w_schedule := tview.NewBox().SetBorder(true).SetTitle("[ 4 ]")
 	w_schedule_fixed_size := 0
 	w_schedule_proportion := 1
 	w_schedule_focus := false
 
 	// Assignments List App
-	w_assignments := tview.NewBox().SetBorder(true).SetTitle("Top")
+	w_assignments := tview.NewBox().SetBorder(true).SetTitle("[ 5 ]")
 	w_assignments_fixed_size := 0
 	w_assignments_proportion := 1
 	w_assignments_focus := false
