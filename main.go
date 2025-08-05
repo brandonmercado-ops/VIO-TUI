@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -87,8 +88,9 @@ func main() {
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(titleBanner, 5, 0, false).
 		AddItem(mainBody, 0, 1, false)
+
 	// -----------------------------------------------------------------------------------------------
-	//				HANDLING WIDGET HIGHLIGHT AND NAVIGATION
+	//				SWITCH SCREENS UPON WIDGET-CLICK
 	// -----------------------------------------------------------------------------------------------
 
 	// Slice of widgets for indexed access
@@ -99,6 +101,31 @@ func main() {
 		w_schedule,    // index 3 = key '4'
 		w_assignments, // index 4 = key '5'
 	}
+	openScreen := func(index int) {
+		// Create a new screen based on which box was focused
+		screen := tview.NewTextView().
+			SetTextAlign(tview.AlignCenter).
+			SetDynamicColors(true)
+
+		// Optional: Customize screen text based on which widget was selected
+		screen.SetText(fmt.Sprintf("🌟 You selected [::b]Box %d[::-]!\n\n[gray]Press Esc to return", index+1))
+
+		// Allow user to go back to the main layout
+		screen.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+			if event.Key() == tcell.KeyEsc {
+				app.SetRoot(flex, true).SetFocus(widgets[index])
+				return nil
+			}
+			return event
+		})
+
+		// Swap the screen
+		app.SetRoot(screen, true).SetFocus(screen)
+	}
+
+	// -----------------------------------------------------------------------------------------------
+	//				HANDLING WIDGET HIGHLIGHT AND NAVIGATION
+	// -----------------------------------------------------------------------------------------------
 
 	// Focused on Calendar by default (upon entering application)
 	focusIndex := 0
@@ -106,6 +133,7 @@ func main() {
 	// Anonymous function to change both focus and color of chosen widget
 	updateFocus := func(index int) {
 
+		// Change colors for highlighted widget and reset color when out of focus
 		for i, w := range widgets {
 			if box, ok := w.(*tview.Box); ok {
 				if i == index {
@@ -131,10 +159,12 @@ func main() {
 				app.SetFocus(widgets[focusIndex])
 				updateFocus(focusIndex)
 			}
+		case tcell.KeyEnter:
+			openScreen(focusIndex)
 		}
+
 		return event
 	})
-
 	// -----------------------------------------------------------------------------------------------
 	//				START-OF-PROGRAM ERROR HANDLING
 	// -----------------------------------------------------------------------------------------------
