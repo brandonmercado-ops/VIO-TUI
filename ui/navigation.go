@@ -5,28 +5,32 @@ import (
 	"github.com/rivo/tview"
 )
 
-// SetupGlobalKeys installs global key handling and returns the focus updater.
-func SetupGlobalKeys(app *tview.Application, widgets []tview.Primitive, openScreen func(int)) func(int) {
+// SetupNavigation installs global input handlers for navigating between widgets.
+// - `app` is the tview.Application
+// - `widgets` are the focusable boxes
+// - `openScreen` is the callback to open the focused screen on Enter
+func HandleNavigation(app *tview.Application, widgets []tview.Primitive, openScreen func(index int)) {
+	// Focused on Calendar by default (upon entering application)
 	focusIndex := 0
 
-	// updateFocus visually highlights a focused widget
+	// Change border colors and styles when focus changes
 	updateFocus := func(index int) {
 		for i, w := range widgets {
 			if box, ok := w.(*tview.Box); ok {
 				if i == index {
-					box.SetBorderColor(tcell.ColorSpringGreen)
-					box.SetTitleColor(tcell.ColorSpringGreen)
-					box.SetBorderAttributes(tcell.AttrBold)
+					box.SetBorderColor(tcell.ColorSpringGreen).
+						SetTitleColor(tcell.ColorSpringGreen).
+						SetBorderAttributes(tcell.AttrBold)
 				} else {
-					box.SetBorderColor(tcell.ColorWhite)
-					box.SetTitleColor(tcell.ColorWhite)
-					box.SetBorderAttributes(tcell.AttrNone)
+					box.SetBorderColor(tcell.ColorWhite).
+						SetTitleColor(tcell.ColorWhite).
+						SetBorderAttributes(tcell.AttrNone)
 				}
 			}
 		}
 	}
 
-	// Handle number key and enter key
+	// Set up input handling for navigation and screen opening
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyRune:
@@ -42,5 +46,6 @@ func SetupGlobalKeys(app *tview.Application, widgets []tview.Primitive, openScre
 		return event
 	})
 
-	return updateFocus
+	// Set initial focus highlight
+	// updateFocus(focusIndex)
 }

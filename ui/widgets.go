@@ -13,7 +13,7 @@ func BuildMainWidgets() ([]tview.Primitive, *tview.Flex) {
 	w_calendar := tview.NewBox().SetBorder(true).SetTitle("[ 1 ]")
 	w_calendar_fixed_size := 0
 	w_calendar_proportion := 2
-	w_calendar_focus := true // App to be focues on calendar widget on startup
+	w_calendar_focus := false
 
 	// Courses
 	w_courses := tview.NewBox().SetBorder(true).SetTitle("[ 2 ]")

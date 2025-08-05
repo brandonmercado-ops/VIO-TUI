@@ -62,48 +62,9 @@ func main() {
 		app.SetRoot(screen, true).SetFocus(screen)
 	}
 
-	// -----------------------------------------------------------------------------------------------
-	//				HANDLING WIDGET HIGHLIGHT AND NAVIGATION
-	// -----------------------------------------------------------------------------------------------
+	// Handle navigation around widgets on main page
+	ui.HandleNavigation(app, widgets, openScreen)
 
-	// Focused on Calendar by default (upon entering application)
-	focusIndex := 0
-
-	// Anonymous function to change both focus and color of chosen widget
-	updateFocus := func(index int) {
-
-		// Change colors for highlighted widget and reset color when out of focus
-		for i, w := range widgets {
-			if box, ok := w.(*tview.Box); ok {
-				if i == index {
-					box.SetBorderColor(tcell.ColorSpringGreen)
-					box.SetTitleColor(tcell.ColorSpringGreen)
-					box.SetBorderAttributes(tcell.AttrBold)
-				} else {
-					box.SetBorderColor(tcell.ColorWhite)
-					box.SetTitleColor(tcell.ColorWhite)
-					box.SetBorderAttributes(tcell.AttrNone)
-				}
-			}
-		}
-	}
-
-	// Focusing on other widgets indicated by their corresponding numbers
-	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyRune:
-			switch event.Rune() {
-			case '1', '2', '3', '4', '5':
-				focusIndex = int(event.Rune() - '1')
-				app.SetFocus(widgets[focusIndex])
-				updateFocus(focusIndex)
-			}
-		case tcell.KeyEnter:
-			openScreen(focusIndex)
-		}
-
-		return event
-	})
 	// -----------------------------------------------------------------------------------------------
 	//				START-OF-PROGRAM ERROR HANDLING
 	// -----------------------------------------------------------------------------------------------
