@@ -1,11 +1,8 @@
 package main
 
 import (
-	"VIO/pages"
 	"VIO/ui"
 
-	"fmt"
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -17,58 +14,13 @@ func main() {
 	// Grab widgets
 	widgets, flex := ui.BuildMainWidgets()
 
-	openScreen := func(index int) {
-		var screen tview.Primitive
-
-		switch index {
-		case 0:
-			screen = pages.CalendarPage(app, func() {
-				app.SetRoot(flex, true).SetFocus(widgets[index])
-			})
-		case 1:
-			screen = pages.CoursesPage(app, func() {
-				app.SetRoot(flex, true).SetFocus(widgets[index])
-			})
-		case 2:
-			screen = pages.TasksPage(app, func() {
-				app.SetRoot(flex, true).SetFocus(widgets[index])
-			})
-		case 3:
-			screen = pages.SchedulePage(app, func() {
-				app.SetRoot(flex, true).SetFocus(widgets[index])
-			})
-		case 4:
-			screen = pages.AssignmentsPage(app, func() {
-				app.SetRoot(flex, true).SetFocus(widgets[index])
-			})
-
-		default:
-			tv := tview.NewTextView().
-				SetTextAlign(tview.AlignCenter).
-				SetDynamicColors(true).
-				SetText(fmt.Sprintf("🌟 You selected [::b]Box %d[::-]!\n\n[gray]Press Esc to return", index+1))
-
-			tv.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-				if event.Key() == tcell.KeyEsc {
-					app.SetRoot(flex, true).SetFocus(widgets[index])
-					return nil
-				}
-				return event
-			})
-
-			screen = tv
-		}
-
-		app.SetRoot(screen, true).SetFocus(screen)
-	}
+	// Choose screen to display (subject to change with widget-click-selection
+	openScreen := ui.ScreenRouter(app, widgets, flex)
 
 	// Handle navigation around widgets on main page
 	ui.HandleNavigation(app, widgets, openScreen)
 
-	// -----------------------------------------------------------------------------------------------
-	//				START-OF-PROGRAM ERROR HANDLING
-	// -----------------------------------------------------------------------------------------------
-
+	// Start program
 	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
 		panic(err)
 	}

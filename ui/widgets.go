@@ -54,20 +54,44 @@ func BuildMainWidgets() ([]tview.Primitive, *tview.Flex) {
 				AddItem(w_assignments, w_assignments_fixed_size, w_assignments_proportion, w_assignments_focus),
 			0, 1, false)
 
-	// Header
-	title := tview.NewTextView().
+		// Header
+
+	quitPadding := tview.NewTextView().
 		SetTextAlign(tview.AlignCenter).
 		SetDynamicColors(true).
 		SetText(`
- __     __   _     ____    
+
+
+		`)
+
+	quitText := tview.NewTextView().
+		SetDynamicColors(true).
+		SetTextAlign(tview.AlignCenter).
+		SetText("[white::b][ ESC ] To QUIT")
+
+	quit := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(quitPadding, 2, 1, false).
+		AddItem(quitText, 0, 2, false)
+
+	title := tview.NewTextView().
+		SetTextAlign(tview.AlignLeft).
+		SetDynamicColors(true).
+		SetText(`
+__     __   _     ____    
 \ \   / /  | |   / __ \ 
  \ \_/ /   | |  | |__| |
   \___/    |_|   \____/ 
 `)
 
+	header := tview.NewFlex().
+		SetDirection(tview.FlexColumn).
+		AddItem(quit, 0, 4, false). // narrow weight
+		AddItem(title, 0, 6, false) // wider weight
+
 	// Final layout with header and body
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(title, 5, 0, false).
+		AddItem(header, 5, 0, false).
 		AddItem(mainBody, 0, 1, false)
 
 	widgets := []tview.Primitive{w_calendar, w_courses, w_todo, w_schedule, w_assignments}
