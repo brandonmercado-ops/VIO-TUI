@@ -1,4 +1,4 @@
-package components
+package widgets
 
 import (
 	// "github.com/gdamore/tcell/v2"

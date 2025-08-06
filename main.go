@@ -1,7 +1,7 @@
 package main
 
 import (
-	"VIO/ui"
+	"VIO/internal/widgets"
 
 	"github.com/rivo/tview"
 )
@@ -12,13 +12,13 @@ func main() {
 	app := tview.NewApplication()
 
 	// Grab widgets
-	widgets, flex := ui.BuildMainWidgets()
+	Widgets, flex := widgets.BuildMainWidgets()
 
 	// Choose screen to display (subject to change with widget-click-selection
-	openScreen := ui.ScreenRouter(app, widgets, flex)
+	openScreen := widgets.ScreenRouter(app, Widgets, flex)
 
 	// Handle navigation around widgets on main page
-	ui.HandleNavigation(app, widgets, openScreen)
+	widgets.HandleNavigation(app, Widgets, openScreen)
 
 	// Start program
 	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
