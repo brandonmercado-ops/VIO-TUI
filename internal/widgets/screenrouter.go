@@ -1,7 +1,11 @@
 package widgets
 
 import (
-	"VIO/internal/views"
+	"VIO/internal/views/assignments"
+	"VIO/internal/views/calendar"
+	"VIO/internal/views/courses"
+	"VIO/internal/views/schedule"
+	"VIO/internal/views/tasks"
 	"fmt"
 
 	"github.com/gdamore/tcell/v2"
@@ -16,23 +20,23 @@ func ScreenRouter(app *tview.Application, widgets []tview.Primitive, layout *tvi
 
 		switch index {
 		case 0:
-			screen = views.CalendarPage(app, func() {
+			screen = calendar.CalendarPage(app, func() {
 				app.SetRoot(layout, true).SetFocus(widgets[index])
 			})
 		case 1:
-			screen = views.CoursesPage(app, func() {
+			screen = courses.CoursesPage(app, func() {
 				app.SetRoot(layout, true).SetFocus(widgets[index])
 			})
 		case 2:
-			screen = views.TasksPage(app, func() {
+			screen = tasks.TasksPage(app, func() {
 				app.SetRoot(layout, true).SetFocus(widgets[index])
 			})
 		case 3:
-			screen = views.SchedulePage(app, func() {
+			screen = schedule.SchedulePage(app, func() {
 				app.SetRoot(layout, true).SetFocus(widgets[index])
 			})
 		case 4:
-			screen = views.AssignmentsPage(app, func() {
+			screen = assignments.AssignmentsPage(app, func() {
 				app.SetRoot(layout, true).SetFocus(widgets[index])
 			})
 		default:

@@ -1,4 +1,4 @@
-package views
+package tasks
 
 import (
 	"github.com/gdamore/tcell/v2"
