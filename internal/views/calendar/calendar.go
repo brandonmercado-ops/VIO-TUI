@@ -12,6 +12,9 @@ import (
 //                            CALENDAR MONTH HEADERS
 //-----------------------------------------------------------------------------------
 
+// https://patorjk.com/software/taag/#p=display&v=2&f=Bulbhead&t=
+// Bulbhead font
+
 var MonthHeaders = map[string]string{
 	"January": `
   ____   __    _  _  __  __    __    ____  _  _ 
