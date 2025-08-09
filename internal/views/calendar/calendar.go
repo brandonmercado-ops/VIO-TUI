@@ -114,12 +114,6 @@ func CalendarPage(app *tview.Application, returnTo func()) tview.Primitive {
 		AddItem(quit, 0, 4, false). // narrow weight
 		AddItem(title, 0, 6, false) // wider weight
 
-	// Header above (later to denote month of the year)
-	// header := tview.NewTextView().
-	// 	SetTextAlign(tview.AlignCenter).
-	// 	SetDynamicColors(true).
-	// 	SetText("📅 [::b]Calendar View[::-]\n\n[gray]Press Esc to return")
-	//
 	// Box on left-middle side of screen that shows days of the month
 	calendarBox := tview.NewBox().SetBorder(true).SetTitle("[ CALENDAR ]")
 
@@ -142,8 +136,7 @@ func CalendarPage(app *tview.Application, returnTo func()) tview.Primitive {
 	// Footer below calendar and mini daily schedule menu
 	footer := tview.NewTextView().
 		SetTextAlign(tview.AlignCenter).
-		SetDynamicColors(true).
-		SetText("FOOTER FOOTER FOOTER")
+		SetDynamicColors(true)
 
 	// Bringing header, main body, and footer together
 	page := tview.NewFlex().SetDirection(tview.FlexRow).

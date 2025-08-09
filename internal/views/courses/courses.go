@@ -29,8 +29,7 @@ func CoursesPage(app *tview.Application, returnTo func()) tview.Primitive {
 
 	title := tview.NewTextView().
 		SetTextAlign(tview.AlignLeft).
-		SetDynamicColors(true).
-		SetText("COURSES PAGE - TEMP HEADER")
+		SetDynamicColors(true)
 
 	header := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
@@ -84,11 +83,10 @@ func CoursesPage(app *tview.Application, returnTo func()) tview.Primitive {
 		AddItem(courseInfo, 0, 7, false).
 		AddItem(rightPadding, 0, 1, false)
 
-	// Footer below calendar and mini daily schedule menu
+	// Footer below course and school info
 	footer := tview.NewTextView().
 		SetTextAlign(tview.AlignCenter).
-		SetDynamicColors(true).
-		SetText("FOOTER FOOTER FOOTER")
+		SetDynamicColors(true)
 
 	// Bringing header, main body, and footer together with paddings
 	page := tview.NewFlex().SetDirection(tview.FlexRow).
