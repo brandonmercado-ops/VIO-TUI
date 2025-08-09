@@ -13,7 +13,8 @@ import (
 //-----------------------------------------------------------------------------------
 
 // https://patorjk.com/software/taag/#p=display&v=2&f=Bulbhead&t=
-// Bulbhead font
+// ----Bulbhead----font---- (old)
+// DiamFont ( NEW CURRENT FONT )
 
 var MonthHeaders = map[string]string{
 	"January": `
