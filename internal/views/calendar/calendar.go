@@ -7,10 +7,6 @@ import (
 	"time"
 )
 
-//-----------------------------------------------------------------------------------
-//                            CALENDAR MONTH HEADERS
-//-----------------------------------------------------------------------------------
-
 func CalendarPage(app *tview.Application, returnTo func()) tview.Primitive {
 
 	// Header
