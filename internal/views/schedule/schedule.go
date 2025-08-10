@@ -50,7 +50,7 @@ func SchedulePage(app *tview.Application, returnTo func()) tview.Primitive {
 		AddItem(title, 0, 6, false) // wider weight
 	// Main body
 
-	// Paddings inbetween both boxes and left and right of screen
+	// Paddings
 
 	leftPadding := tview.NewBox()
 	rightPadding := tview.NewBox()
