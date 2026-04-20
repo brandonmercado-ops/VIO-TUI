@@ -2,13 +2,18 @@ package schedule
 
 import (
 	"VIO/internal/asciiart"
+	"VIO/internal/model"
+	"fmt"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"strconv"
-	"time"
 )
 
-func SchedulePage(app *tview.Application, returnTo func()) tview.Primitive {
+func SchedulePage(app *tview.Application, data *model.AppData, returnTo func()) tview.Primitive {
 
 	// Header
 
@@ -35,14 +40,9 @@ func SchedulePage(app *tview.Application, returnTo func()) tview.Primitive {
 		SetDynamicColors(true)
 
 	currMonth := time.Now().Month().String()
-	currDayInt := time.Now().Day()      // returns integer
-	currDay := strconv.Itoa(currDayInt) // converting integer to string for header map `internal/asciiart/days.go`
+	currDay := strconv.Itoa(time.Now().Day())
 
-	monthAscii := asciiart.GetMonthHeader(currMonth)
-	dayAscii := asciiart.GetDayHeader(currDay)
-	dateAscii := monthAscii + dayAscii
-
-	title.SetText(dateAscii)
+	title.SetText(asciiart.GetMonthHeader(currMonth) + asciiart.GetDayHeader(currDay))
 
 	header := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
@@ -50,19 +50,15 @@ func SchedulePage(app *tview.Application, returnTo func()) tview.Primitive {
 		AddItem(title, 0, 6, false) // wider weight
 	// Main body
 
-	// Paddings
-
-	leftPadding := tview.NewBox()
-	rightPadding := tview.NewBox()
-
 	// Schedule Box
 
-	schedule := tview.NewBox()
+	scheduleBody := tview.NewTextView().SetDynamicColors(true)
+	scheduleBody.SetText(renderUpcomingFeed(data))
 
 	mainBody := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(leftPadding, 0, 1, false).
-		AddItem(schedule, 0, 5, false).
-		AddItem(rightPadding, 0, 1, false)
+		AddItem(tview.NewBox(), 0, 1, false).
+		AddItem(scheduleBody, 0, 5, false).
+		AddItem(tview.NewBox(), 0, 1, false)
 
 	// Footer
 
@@ -85,4 +81,48 @@ func SchedulePage(app *tview.Application, returnTo func()) tview.Primitive {
 	})
 
 	return page
+}
+
+func renderUpcomingFeed(data *model.AppData) string {
+	type item struct {
+		label string
+		due   time.Time
+	}
+
+	var items []item
+
+	for _, assignment := range data.Assignments {
+		if assignment.DueAt == nil {
+			continue
+		}
+		items = append(items, item{
+			label: fmt.Sprintf("Assignment: %s", assignment.Name),
+			       due:   *assignment.DueAt,
+		})
+	}
+
+	for _, task := range data.Tasks {
+		if task.DueAt == nil {
+			continue
+		}
+		items = append(items, item{
+			label: fmt.Sprintf("Task: %s", task.Title),
+			       due:   *task.DueAt,
+		})
+	}
+
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].due.Before(items[j].due)
+	})
+
+	if len(items) == 0 {
+		return "No dated items loaded yet."
+	}
+
+	var lines []string
+	for _, it := range items {
+		lines = append(lines, fmt.Sprintf("%s\n%s", it.label, it.due.Format("Mon Jan 2, 3:04 PM")))
+	}
+
+	return strings.Join(lines, "\n\n")
 }

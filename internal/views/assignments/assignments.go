@@ -1,11 +1,16 @@
 package assignments
 
 import (
+	"VIO/internal/model"
+	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-func AssignmentsPage(app *tview.Application, returnTo func()) tview.Primitive {
+func AssignmentsPage(app *tview.Application, data *model.AppData, returnTo func()) tview.Primitive {
 
 	// Header
 
@@ -42,19 +47,15 @@ func AssignmentsPage(app *tview.Application, returnTo func()) tview.Primitive {
 		AddItem(quit, 0, 3, false).
 		AddItem(title, 0, 6, false)
 
-	// Paddings
-
-	leftPadding := tview.NewBox()
-	rightPadding := tview.NewBox()
-
 	// Main body
 
-	assignmentsBody := tview.NewBox()
+	assignmentsBody := tview.NewTextView().SetDynamicColors(true)
+	assignmentsBody.SetText(renderAssignments(data))
 
 	mainBody := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(leftPadding, 0, 1, false).
+		AddItem(tview.NewBox(), 0, 1, false).
 		AddItem(assignmentsBody, 0, 6, false).
-		AddItem(rightPadding, 0, 1, false)
+		AddItem(tview.NewBox(), 0, 1, false)
 
 	// Footer
 
@@ -64,7 +65,7 @@ func AssignmentsPage(app *tview.Application, returnTo func()) tview.Primitive {
 		SetText("[ + ] ADD   [ - ] REMOVE   [ E ] EDIT")
 
 	page := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(header, 0, 1, false).
+		AddItem(header, 0, 2, false).
 		AddItem(mainBody, 0, 5, false).
 		AddItem(footer, 0, 1, false)
 
@@ -77,4 +78,67 @@ func AssignmentsPage(app *tview.Application, returnTo func()) tview.Primitive {
 	})
 
 	return page
+}
+
+func renderAssignments(data *model.AppData) string {
+	assignments := append([]model.Assignment(nil), data.Assignments...)
+
+	sort.Slice(assignments, func(i, j int) bool {
+		left := assignments[i].DueAt
+		right := assignments[j].DueAt
+
+		if left == nil {
+			return false
+		}
+		if right == nil {
+			return true
+		}
+
+		return left.Before(*right)
+	})
+
+	if len(assignments) == 0 {
+		return "No assignments loaded yet."
+	}
+
+	var lines []string
+	for _, assignment := range assignments {
+		courseLabel := assignment.CourseID
+		for _, course := range data.Courses {
+			if course.ID == assignment.CourseID {
+				courseLabel = course.Code
+				break
+			}
+		}
+
+		statusParts := []string{}
+		if assignment.HasSubmitted {
+			statusParts = append(statusParts, "submitted")
+		}
+		if assignment.IsMissing {
+			statusParts = append(statusParts, "missing")
+		}
+		if assignment.IsLate {
+			statusParts = append(statusParts, "late")
+		}
+		if len(statusParts) == 0 {
+			statusParts = append(statusParts, "open")
+		}
+
+		line := fmt.Sprintf("[white::b]%s[::-]  [gray](%s)[-]", assignment.Name, courseLabel)
+
+		if assignment.DueAt != nil {
+			line += fmt.Sprintf("\nDue: %s", assignment.DueAt.Format("Mon Jan 2, 3:04 PM"))
+		}
+
+		line += fmt.Sprintf("\nStatus: %s", strings.Join(statusParts, ", "))
+
+		if assignment.PointsPossible > 0 {
+			line += fmt.Sprintf("\nPoints: %.0f", assignment.PointsPossible)
+		}
+
+		lines = append(lines, line)
+	}
+
+	return strings.Join(lines, "\n\n")
 }

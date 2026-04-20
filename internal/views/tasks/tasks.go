@@ -1,11 +1,17 @@
 package tasks
 
 import (
+	"VIO/internal/model"
+	"fmt"
+	"sort"
+	"strings"
+	"time"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-func TasksPage(app *tview.Application, returnTo func()) tview.Primitive {
+func TasksPage(app *tview.Application, data *model.AppData, returnTo func()) tview.Primitive {
 
 	// Header
 
@@ -42,34 +48,40 @@ func TasksPage(app *tview.Application, returnTo func()) tview.Primitive {
 		AddItem(quit, 0, 4, false). // narrow weight
 		AddItem(title, 0, 6, false) // wider weight
 
-	// Paddings inbetween both boxes and left and right of screen
-
-	leftPadding := tview.NewBox()
-	middlePadding := tview.NewBox()
-	rightPadding := tview.NewBox()
-
 	// TODO, IN PROGRESS, and DONE task sections
 
-	todo := tview.NewBox().SetBorder(true).SetTitle("[ TODO ]")
-	inProg := tview.NewBox().SetBorder(true).SetTitle("[ IN PROGRESS ]")
-	done := tview.NewBox().SetBorder(true).SetTitle("[ DONE ]")
+	inProgress := tview.NewTextView().SetDynamicColors(true)
+	inProgress.SetBorder(true)
+	inProgress.SetTitle("[ IN PROGRESS ]")
+
+	overdue := tview.NewTextView().SetDynamicColors(true)
+	overdue.SetBorder(true)
+	overdue.SetTitle("[ OVERDUE ]")
+
+	complete := tview.NewTextView().SetDynamicColors(true)
+	complete.SetBorder(true)
+	complete.SetTitle("[ COMPLETE ]")
+
+	inProgress.SetText(renderTaskColumn(data.Tasks, "in_progress"))
+	overdue.SetText(renderTaskColumn(data.Tasks, "overdue"))
+	complete.SetText(renderTaskColumn(data.Tasks, "complete"))
 
 	// Main body with paddings
 
 	mainBody := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(leftPadding, 0, 1, false).
-		AddItem(todo, 0, 8, false).
-		AddItem(middlePadding, 0, 1, false).
-		AddItem(inProg, 0, 8, false).
-		AddItem(middlePadding, 0, 1, false).
-		AddItem(done, 0, 7, false).
-		AddItem(rightPadding, 0, 1, false)
+		AddItem(tview.NewBox(), 0, 1, false).
+		AddItem(inProgress, 0, 8, false).
+		AddItem(tview.NewBox(), 0, 1, false).
+		AddItem(overdue, 0, 8, false).
+		AddItem(tview.NewBox(), 0, 1, false).
+		AddItem(complete, 0, 7, false).
+		AddItem(tview.NewBox(), 0, 1, false)
 
 	// Footer below all 3 task columns
 	footer := tview.NewTextView().
 		SetTextAlign(tview.AlignCenter).
-		SetDynamicColors(true) // .
-		// SetText("FOOTER FOOTER FOOTER")
+		SetDynamicColors(true).
+		SetText("[ + ] ADD   [ - ] REMOVE   [ E ] EDIT")
 
 	// Bringing header, main body, and footer together with paddings
 	page := tview.NewFlex().SetDirection(tview.FlexRow).
@@ -86,4 +98,54 @@ func TasksPage(app *tview.Application, returnTo func()) tview.Primitive {
 	})
 
 	return page
+}
+
+func renderTaskColumn(tasks []model.Task, status string) string {
+	filtered := make([]model.Task, 0)
+	for _, task := range tasks {
+		if effectiveTaskStatus(task) == status {
+			filtered = append(filtered, task)
+		}
+	}
+
+	sort.Slice(filtered, func(i, j int) bool {
+		left := filtered[i].DueAt
+		right := filtered[j].DueAt
+		if left == nil {
+			return false
+		}
+		if right == nil {
+			return true
+		}
+		return left.Before(*right)
+	})
+
+	var lines []string
+	for _, task := range filtered {
+		line := task.Title
+		if task.CourseID != "" {
+			line += fmt.Sprintf("\n[gray]%s[-]", task.CourseID)
+		}
+		if task.DueAt != nil {
+			line += fmt.Sprintf("\nDue: %s", task.DueAt.Format("Mon Jan 2, 3:04 PM"))
+		}
+		lines = append(lines, line)
+	}
+
+	if len(lines) == 0 {
+		return "No tasks here yet."
+	}
+
+	return strings.Join(lines, "\n\n")
+}
+
+func effectiveTaskStatus(task model.Task) string {
+	status := strings.ToLower(strings.TrimSpace(task.Status))
+	if status == "complete" {
+		return "complete"
+	}
+	if task.DueAt != nil && task.DueAt.Before(time.Now()) {
+		return "overdue"
+	}
+	return "in_progress"
 }

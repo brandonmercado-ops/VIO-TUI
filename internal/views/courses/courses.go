@@ -1,11 +1,15 @@
 package courses
 
 import (
+	"VIO/internal/model"
+	"fmt"
+	"strings"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-func CoursesPage(app *tview.Application, returnTo func()) tview.Primitive {
+func CoursesPage(app *tview.Application, data *model.AppData, returnTo func()) tview.Primitive {
 
 	// Header
 
@@ -55,11 +59,8 @@ func CoursesPage(app *tview.Application, returnTo func()) tview.Primitive {
 
 	studentInfo := tview.NewTextView().
 		SetTextAlign(tview.AlignCenter).
-		SetText(`
-무명왕 님
-대학 4학년
-컴퓨터 전공
-		`)
+		SetDynamicColors(true).
+		SetText(fmt.Sprintf("\n%s\n%s\n", data.Student.Name, data.Student.School))
 
 	schoolInfo := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(schoolTitle, 0, 1, false).
@@ -67,21 +68,21 @@ func CoursesPage(app *tview.Application, returnTo func()) tview.Primitive {
 
 	// Course info
 
-	courseInfo := tview.NewBox().SetBorder(true).SetTitle("[ COURSES ]")
+	courseInfo := tview.NewTextView().
+		SetDynamicColors(true)
+	courseInfo.SetBorder(true)
+	courseInfo.SetTitle("[ COURSES ]")
 
-	// Paddings inbetween both boxes and left and right of screen
-	leftPadding := tview.NewBox()
-	middlePadding := tview.NewBox()
-	rightPadding := tview.NewBox()
+	courseInfo.SetText(renderCourses(data))
 
 	// Main body
 
 	mainBody := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(leftPadding, 0, 1, false).
+		AddItem(tview.NewBox(), 0, 1, false).
 		AddItem(schoolInfo, 0, 3, false).
-		AddItem(middlePadding, 0, 1, false).
+		AddItem(tview.NewBox(), 0, 1, false).
 		AddItem(courseInfo, 0, 7, false).
-		AddItem(rightPadding, 0, 1, false)
+		AddItem(tview.NewBox(), 0, 1, false)
 
 	// Footer below course and school info
 	footer := tview.NewTextView().
@@ -103,4 +104,27 @@ func CoursesPage(app *tview.Application, returnTo func()) tview.Primitive {
 	})
 
 	return page
+}
+
+func renderCourses(data *model.AppData) string {
+	if len(data.Courses) == 0 {
+		return "No courses loaded yet."
+	}
+
+	var lines []string
+	for _, course := range data.Courses {
+		line := fmt.Sprintf("[white::b]%s[::-]\n%s", course.Code, course.Name)
+
+		if course.Term != "" {
+			line += fmt.Sprintf("\n[gray]%s[-]", course.Term)
+		}
+
+		if course.Workflow != "" {
+			line += fmt.Sprintf("\n[gray]state: %s[-]", course.Workflow)
+		}
+
+		lines = append(lines, line)
+	}
+
+	return strings.Join(lines, "\n\n")
 }
