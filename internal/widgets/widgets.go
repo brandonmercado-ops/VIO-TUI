@@ -1,60 +1,60 @@
 package widgets
 
 import (
+	"VIO/internal/model"
+	"fmt"
+	"sort"
+	"strings"
+	"time"
+
 	"github.com/rivo/tview"
 )
 
 // BuildMainWidgets returns the list of box widgets and the main layout.
-func BuildMainWidgets() ([]tview.Primitive, *tview.Flex) {
+func BuildMainWidgets(data *model.AppData) ([]tview.Primitive, *tview.Flex) {
 
 	// Widgets
 
-	// Calendar
-	w_calendar := tview.NewBox().SetBorder(true).SetTitle("[ 1 ]")
-	w_calendar_fixed_size := 0
-	w_calendar_proportion := 2
-	w_calendar_focus := false
+	// Dashboard panels
+	wCalendar := tview.NewTextView().SetDynamicColors(true)
+	wCalendar.SetBorder(true)
+	wCalendar.SetTitle("[ 1 ]")
 
-	// Courses
-	w_courses := tview.NewBox().SetBorder(true).SetTitle("[ 2 ]")
-	w_courses_fixed_size := 0
-	w_courses_proportion := 1
-	w_courses_focus := false
+	wCourses := tview.NewTextView().SetDynamicColors(true)
+	wCourses.SetBorder(true)
+	wCourses.SetTitle("[ 2 ]")
 
-	// Todo/Tasks
-	w_todo := tview.NewBox().SetBorder(true).SetTitle("[ 3 ]")
-	w_todo_fixed_size := 0
-	w_todo_proportion := 1
-	w_todo_focus := false
+	wTodo := tview.NewTextView().SetDynamicColors(true)
+	wTodo.SetBorder(true)
+	wTodo.SetTitle("[ 3 ]")
 
-	// Daily Schedule
-	w_schedule := tview.NewBox().SetBorder(true).SetTitle("[ 4 ]")
-	w_schedule_fixed_size := 0
-	w_schedule_proportion := 1
-	w_schedule_focus := false
+	wSchedule := tview.NewTextView().SetDynamicColors(true)
+	wSchedule.SetBorder(true)
+	wSchedule.SetTitle("[ 4 ]")
 
-	// Assignments
-	w_assignments := tview.NewBox().SetBorder(true).SetTitle("[ 5 ]")
-	w_assignments_fixed_size := 0
-	w_assignments_proportion := 1
-	w_assignments_focus := false
+	wAssignments := tview.NewTextView().SetDynamicColors(true)
+	wAssignments.SetBorder(true)
+	wAssignments.SetTitle("[ 5 ]")
 
-	// Layout structure
+	wCalendar.SetText(buildCalendarSummary(data))
+	wCourses.SetText(buildCoursesSummary(data))
+	wTodo.SetText(buildTasksSummary(data))
+	wSchedule.SetText(buildScheduleSummary(data))
+	wAssignments.SetText(buildAssignmentsSummary(data))
+
 	mainBody := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(tview.NewBox(), 1, 3, false).
-		AddItem(
-			tview.NewFlex().SetDirection(tview.FlexColumn).
-				AddItem(w_calendar, w_calendar_fixed_size, w_calendar_proportion, w_calendar_focus).
-				AddItem(w_courses, w_courses_fixed_size, w_courses_proportion, w_courses_focus).
-				AddItem(w_todo, w_todo_fixed_size, w_todo_proportion, w_todo_focus),
-			0, 1, false).
-		AddItem(
-			tview.NewFlex().SetDirection(tview.FlexColumn).
-				AddItem(w_schedule, w_schedule_fixed_size, w_schedule_proportion, w_schedule_focus).
-				AddItem(w_assignments, w_assignments_fixed_size, w_assignments_proportion, w_assignments_focus),
-			0, 1, false)
-
-		// Header
+	AddItem(tview.NewBox(), 1, 3, false).
+	AddItem(
+		tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(wCalendar, 0, 2, false).
+		AddItem(wCourses, 0, 1, false).
+		AddItem(wTodo, 0, 1, false),
+		0, 1, false).
+	AddItem(
+		tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(wSchedule, 0, 1, false).
+		AddItem(wAssignments, 0, 1, false),
+		0, 1, false)
 
 	quitPadding := tview.NewTextView().
 		SetTextAlign(tview.AlignCenter).
@@ -67,7 +67,7 @@ func BuildMainWidgets() ([]tview.Primitive, *tview.Flex) {
 	quitText := tview.NewTextView().
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignCenter).
-		SetText("[white::b][ ESC ] To QUIT")
+		SetText("[white::b][ q ] To QUIT")
 
 	quit := tview.NewFlex().
 		SetDirection(tview.FlexRow).
@@ -94,6 +94,144 @@ __     __   _     ____
 		AddItem(header, 5, 0, false).
 		AddItem(mainBody, 0, 1, false)
 
-	widgets := []tview.Primitive{w_calendar, w_courses, w_todo, w_schedule, w_assignments}
+	widgets := []tview.Primitive{wCalendar, wCourses, wTodo, wSchedule, wAssignments}
 	return widgets, flex
+}
+
+func buildCalendarSummary(data *model.AppData) string {
+	now := time.Now()
+	var dueLines []string
+
+	for _, assignment := range data.Assignments {
+		if assignment.DueAt == nil {
+			continue
+		}
+		if assignment.DueAt.Month() != now.Month() || assignment.DueAt.Year() != now.Year() {
+			continue
+		}
+		dueLines = append(dueLines, fmt.Sprintf("%02d  %s", assignment.DueAt.Day(), assignment.Name))
+	}
+
+	sort.Strings(dueLines)
+
+	if len(dueLines) == 0 {
+		return fmt.Sprintf("%s\n\nNo assignment due dates this month yet.", now.Month())
+	}
+	if len(dueLines) > 8 {
+		dueLines = dueLines[:8]
+	}
+
+	return fmt.Sprintf("%s\n\n%s", now.Month(), strings.Join(dueLines, "\n"))
+}
+
+func buildCoursesSummary(data *model.AppData) string {
+	if len(data.Courses) == 0 {
+		return "Courses\n\nNo courses loaded."
+	}
+
+	var lines []string
+	for _, course := range data.Courses {
+		lines = append(lines, fmt.Sprintf("%s\n%s", course.Code, course.Name))
+	}
+
+	return strings.Join(lines, "\n\n")
+}
+
+func buildTasksSummary(data *model.AppData) string {
+	if len(data.Tasks) == 0 {
+		return "Tasks\n\nNo personal tasks yet."
+	}
+
+	counts := map[string]int{
+		"in_progress": 0,
+		"overdue":     0,
+		"complete":    0,
+	}
+
+	for _, task := range data.Tasks {
+		counts[dashboardTaskStatus(task)]++
+	}
+
+	return fmt.Sprintf(
+		"IN PROGRESS: %d\nOVERDUE: %d\nCOMPLETE: %d",
+		counts["in_progress"],
+		counts["overdue"],
+		counts["complete"],
+	)
+}
+
+func dashboardTaskStatus(task model.Task) string {
+	status := strings.ToLower(strings.TrimSpace(task.Status))
+	if status == "complete" {
+		return "complete"
+	}
+	if task.DueAt != nil && task.DueAt.Before(time.Now()) {
+		return "overdue"
+	}
+	return "in_progress"
+}
+
+func buildScheduleSummary(data *model.AppData) string {
+	today := time.Now()
+	var lines []string
+
+	for _, task := range data.Tasks {
+		if task.DueAt == nil {
+			continue
+		}
+
+		y, m, d := task.DueAt.Date()
+		ny, nm, nd := today.Date()
+
+		if y == ny && m == nm && d == nd {
+			lines = append(lines, fmt.Sprintf("%s\n%s", task.Title, task.DueAt.Format("3:04 PM")))
+		}
+	}
+
+	if len(lines) == 0 {
+		return "Today\n\nNothing due today."
+	}
+
+	return strings.Join(lines, "\n\n")
+}
+
+func buildAssignmentsSummary(data *model.AppData) string {
+	assignments := append([]model.Assignment(nil), data.Assignments...)
+
+	sort.Slice(assignments, func(i, j int) bool {
+		left := assignments[i].DueAt
+		right := assignments[j].DueAt
+
+		if left == nil {
+			return false
+		}
+		if right == nil {
+			return true
+		}
+
+		return left.Before(*right)
+	})
+
+	var lines []string
+	for _, assignment := range assignments {
+		if assignment.DueAt == nil {
+			continue
+		}
+
+		lines = append(lines, fmt.Sprintf(
+			"%s\n%s",
+			assignment.Name,
+			assignment.DueAt.Format("Mon 1/2 3:04 PM"),
+		))
+
+		if len(lines) == 3 {
+			break
+		}
+	}
+
+	if len(lines) == 0 {
+		return "Assignments\n\nNo upcoming assignments."
+	}
+
+	return strings.Join(lines, "\n\n")
 }
