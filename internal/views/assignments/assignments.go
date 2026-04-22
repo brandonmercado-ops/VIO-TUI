@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -81,24 +82,25 @@ func AssignmentsPage(app *tview.Application, data *model.AppData, returnTo func(
 }
 
 func renderAssignments(data *model.AppData) string {
-	assignments := append([]model.Assignment(nil), data.Assignments...)
+	now := time.Now()
+	assignments := make([]model.Assignment, 0)
+
+	for _, assignment := range data.Assignments {
+		if assignment.DueAt == nil {
+			continue
+		}
+		due := assignment.DueAt.In(time.Local)
+		if due.After(now) {
+			assignments = append(assignments, assignment)
+		}
+	}
 
 	sort.Slice(assignments, func(i, j int) bool {
-		left := assignments[i].DueAt
-		right := assignments[j].DueAt
-
-		if left == nil {
-			return false
-		}
-		if right == nil {
-			return true
-		}
-
-		return left.Before(*right)
+		return assignments[i].DueAt.In(time.Local).Before(assignments[j].DueAt.In(time.Local))
 	})
 
 	if len(assignments) == 0 {
-		return "No assignments loaded yet."
+		return "No upcoming assignments."
 	}
 
 	var lines []string
@@ -128,7 +130,8 @@ func renderAssignments(data *model.AppData) string {
 		line := fmt.Sprintf("[white::b]%s[::-]  [gray](%s)[-]", assignment.Name, courseLabel)
 
 		if assignment.DueAt != nil {
-			line += fmt.Sprintf("\nDue: %s", assignment.DueAt.Format("Mon Jan 2, 3:04 PM"))
+			due := assignment.DueAt.In(time.Local)
+			line += fmt.Sprintf("\nDue: %s", due.Format("Mon Jan 2, 3:04 PM"))
 		}
 
 		line += fmt.Sprintf("\nStatus: %s", strings.Join(statusParts, ", "))

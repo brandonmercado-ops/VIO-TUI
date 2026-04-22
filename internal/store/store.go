@@ -34,7 +34,38 @@ func LoadAppData() (*model.AppData, error) {
 		return nil, fmt.Errorf("decode data file: %w", err)
 	}
 
-	return &data, nil
+	normalized, changed := normalizeAppData(data)
+	if changed {
+		if err := SaveAppData(normalized); err != nil {
+			return nil, err
+		}
+	}
+
+	return &normalized, nil
+}
+
+// Write modified JSON data
+func SaveAppData(data model.AppData) error {
+	path, err := dataFilePath()
+	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("create app config directory: %w", err)
+	}
+
+	normalized, _ := normalizeAppData(data)
+	jsonBytes, err := json.MarshalIndent(normalized, "", "  ")
+	if err != nil {
+		return fmt.Errorf("encode data file: %w", err)
+	}
+
+	if err := os.WriteFile(path, jsonBytes, 0o644); err != nil {
+		return fmt.Errorf("write data file: %w", err)
+	}
+
+	return nil
 }
 
 // Build config path
