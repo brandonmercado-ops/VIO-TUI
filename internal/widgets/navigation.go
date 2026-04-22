@@ -9,7 +9,7 @@ import (
 // - `app` is the tview.Application
 // - `widgets` are the focusable boxes
 // - `openScreen` is the callback to open the focused screen on Enter
-func HandleNavigation(app *tview.Application, widgets []tview.Primitive, openScreen func(index int)) {
+func HandleNavigation(dashboard *tview.Flex, widgets []tview.Primitive, openScreen func(index int), openCanvasSettings func(), stopApp func()) {
 	// Focused on Calendar by default (upon entering application)
 	focusIndex := 0
 
@@ -34,18 +34,22 @@ func HandleNavigation(app *tview.Application, widgets []tview.Primitive, openScr
 	}
 
 	// Set up input handling for navigation and screen opening
-	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	dashboard.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 			case tcell.KeyRune:
 				switch event.Rune() {
 					case 'q', 'Q': // q to quit app globally
-						app.Stop()
+						stopApp()
+						return nil
+
+					case 'c', 'C':
+						openCanvasSettings()
 						return nil
 
 					case '1', '2', '3', '4', '5':
 						focusIndex = int(event.Rune() - '1')
-						app.SetFocus(widgets[focusIndex])
 						updateFocus(focusIndex)
+						return nil
 				}
 					case tcell.KeyEnter:
 						openScreen(focusIndex)

@@ -89,40 +89,53 @@ func renderUpcomingFeed(data *model.AppData) string {
 		due   time.Time
 	}
 
-	var items []item
+	now := time.Now()
+	var todayItems []item
+	var pastItems []item
 
 	for _, assignment := range data.Assignments {
 		if assignment.DueAt == nil {
 			continue
 		}
-		items = append(items, item{
+
+		due := assignment.DueAt.In(time.Local)
+		entry := item{
 			label: fmt.Sprintf("Assignment: %s", assignment.Name),
-			       due:   *assignment.DueAt,
-		})
-	}
-
-	for _, task := range data.Tasks {
-		if task.DueAt == nil {
-			continue
+			due:   due,
 		}
-		items = append(items, item{
-			label: fmt.Sprintf("Task: %s", task.Title),
-			       due:   *task.DueAt,
-		})
+
+		if sameLocalDay(due, now) {
+			todayItems = append(todayItems, entry)
+		} else if due.Before(now) {
+			pastItems = append(pastItems, entry)
+		}
 	}
 
-	sort.Slice(items, func(i, j int) bool {
-		return items[i].due.Before(items[j].due)
+	sort.Slice(todayItems, func(i, j int) bool {
+		return todayItems[i].due.Before(todayItems[j].due)
+	})
+	sort.Slice(pastItems, func(i, j int) bool {
+		return pastItems[i].due.Before(pastItems[j].due)
 	})
 
-	if len(items) == 0 {
+	allItems := append(todayItems, pastItems...)
+
+	if len(allItems) == 0 {
 		return "No dated items loaded yet."
 	}
 
 	var lines []string
-	for _, it := range items {
+	for _, it := range todayItems {
 		lines = append(lines, fmt.Sprintf("%s\n%s", it.label, it.due.Format("Mon Jan 2, 3:04 PM")))
 	}
 
 	return strings.Join(lines, "\n\n")
+}
+
+func sameLocalDay(a, b time.Time) bool {
+	la := a.In(time.Local)
+	lb := b.In(time.Local)
+	ay, am, ad := la.Date()
+	by, bm, bd := lb.Date()
+	return ay == by && am == bm && ad == bd
 }

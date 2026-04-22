@@ -67,7 +67,7 @@ func BuildMainWidgets(data *model.AppData) ([]tview.Primitive, *tview.Flex) {
 	quitText := tview.NewTextView().
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignCenter).
-		SetText("[white::b][ q ] To QUIT")
+		SetText("[white::b][ q ] To QUIT    [ c ] Canvas Settings")
 
 	quit := tview.NewFlex().
 		SetDirection(tview.FlexRow).
@@ -175,16 +175,18 @@ func buildScheduleSummary(data *model.AppData) string {
 	today := time.Now()
 	var lines []string
 
-	for _, task := range data.Tasks {
-		if task.DueAt == nil {
+	for _, assignment := range data.Assignments {
+		if assignment.DueAt == nil {
 			continue
 		}
 
-		y, m, d := task.DueAt.Date()
-		ny, nm, nd := today.Date()
-
-		if y == ny && m == nm && d == nd {
-			lines = append(lines, fmt.Sprintf("%s\n%s", task.Title, task.DueAt.Format("3:04 PM")))
+		due := assignment.DueAt.In(time.Local)
+		if sameLocalDay(due, today) {
+			lines = append(lines, fmt.Sprintf(
+				"%s\n%s",
+				assignment.Name,
+				due.Format("3:04 PM"),
+			))
 		}
 	}
 
@@ -196,32 +198,30 @@ func buildScheduleSummary(data *model.AppData) string {
 }
 
 func buildAssignmentsSummary(data *model.AppData) string {
-	assignments := append([]model.Assignment(nil), data.Assignments...)
+	now := time.Now()
+	assignments := make([]model.Assignment, 0)
+
+	for _, assignment := range data.Assignments {
+		if assignment.DueAt == nil {
+			continue
+		}
+		due := assignment.DueAt.In(time.Local)
+		if due.After(now) {
+			assignments = append(assignments, assignment)
+		}
+	}
 
 	sort.Slice(assignments, func(i, j int) bool {
-		left := assignments[i].DueAt
-		right := assignments[j].DueAt
-
-		if left == nil {
-			return false
-		}
-		if right == nil {
-			return true
-		}
-
-		return left.Before(*right)
+		return assignments[i].DueAt.In(time.Local).Before(assignments[j].DueAt.In(time.Local))
 	})
 
 	var lines []string
 	for _, assignment := range assignments {
-		if assignment.DueAt == nil {
-			continue
-		}
-
+		due := assignment.DueAt.In(time.Local)
 		lines = append(lines, fmt.Sprintf(
 			"%s\n%s",
 			assignment.Name,
-			assignment.DueAt.Format("Mon 1/2 3:04 PM"),
+			due.Format("Mon 1/2 3:04 PM"),
 		))
 
 		if len(lines) == 3 {
@@ -234,4 +234,35 @@ func buildAssignmentsSummary(data *model.AppData) string {
 	}
 
 	return strings.Join(lines, "\n\n")
+}
+
+// Redraw the dashboard panels after sync
+func RefreshMainWidgets(widgets []tview.Primitive, data *model.AppData) {
+	if len(widgets) < 5 {
+		return
+	}
+
+	if tv, ok := widgets[0].(*tview.TextView); ok {
+		tv.SetText(buildCalendarSummary(data))
+	}
+	if tv, ok := widgets[1].(*tview.TextView); ok {
+		tv.SetText(buildCoursesSummary(data))
+	}
+	if tv, ok := widgets[2].(*tview.TextView); ok {
+		tv.SetText(buildTasksSummary(data))
+	}
+	if tv, ok := widgets[3].(*tview.TextView); ok {
+		tv.SetText(buildScheduleSummary(data))
+	}
+	if tv, ok := widgets[4].(*tview.TextView); ok {
+		tv.SetText(buildAssignmentsSummary(data))
+	}
+}
+
+func sameLocalDay(a, b time.Time) bool {
+	la := a.In(time.Local)
+	lb := b.In(time.Local)
+	ay, am, ad := la.Date()
+	by, bm, bd := lb.Date()
+	return ay == by && am == bm && ad == bd
 }
