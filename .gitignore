@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# Object files
+*.o
+*.a
+*.so
+
+# Go build artifacts
+*.exe
+*.out
+/vio

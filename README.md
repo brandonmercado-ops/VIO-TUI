@@ -10,7 +10,9 @@
 <br />
 <div align="center">
 
-  <h1 align="center">VIO-TUI</h1>
+  <div align="center">
+    <img src="docs/assets/images/vio_github_logo.webp" alt="VIO-TUI Logo" width="400">
+  </div>
 
   <p align="center">
     A blazing-fast Terminal User Interface for daily time-management tracking — built by a student software engineer, for student software engineers.
