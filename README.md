@@ -43,6 +43,8 @@
 8. [Acknowledgments](#acknowledgments)
 
 ---
+![](https://github.com/whitegunrose/VIO-TUI/blob/main/docs/assets/demos/demo.gif)
+---
 
 ## About The Project
 
