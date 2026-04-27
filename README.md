@@ -212,7 +212,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 **whitegunrose** — [@whitegunrose](https://github.com/whitegunrose)
 
-Project Link: [https://github.com/whitegunrose/VIO-TUI](https://github.com/whitegunrose/VIO-TUI)
+<!-- Project Link: [https://github.com/whitegunrose/VIO-TUI](https://github.com/whitegunrose/VIO-TUI) -->
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
