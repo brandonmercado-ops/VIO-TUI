@@ -15,7 +15,7 @@
   </div>
 
   <p align="center">
-    A blazing-fast Terminal User Interface for daily time-management tracking — built by a student software engineer, for student software engineers.
+    Terminal User Interface for daily time-management tracking — built by a student software engineer, for student software engineers.
     <br />
     <a href="https://github.com/whitegunrose/VIO-TUI/tree/main/docs"><strong>Explore the docs »</strong></a>
     <br />
