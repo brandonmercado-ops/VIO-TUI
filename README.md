@@ -17,12 +17,12 @@
   <p align="center">
     Terminal User Interface for daily time-management tracking — built by a student software engineer, for student software engineers.
     <br />
-    <a href="https://github.com/whitegunrose/VIO-TUI/wiki/Documentation"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/whitegunrose/VIO-TUI/wiki/Documentation" target="_blank"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/whitegunrose/VIO-TUI/issues/new?labels=bug&template=bug-report.md">Report Bug</a>
+    <a href="https://github.com/whitegunrose/VIO-TUI/issues/new?labels=bug&template=bug-report.md" target="_blank">Report Bug</a>
     ·
-    <a href="https://github.com/whitegunrose/VIO-TUI/issues/new?labels=enhancement&template=feature-request.md">Request Feature</a>
+    <a href="https://github.com/whitegunrose/VIO-TUI/issues/new?labels=enhancement&template=feature-request.md" target="_blank">Request Feature</a>
   </p>
 </div>
 
