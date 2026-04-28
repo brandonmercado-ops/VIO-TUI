@@ -90,10 +90,10 @@ func main() {
 			defer ticker.Stop()
 			for {
 				select {
-					case <-ticker.C:
-						syncNow()
-					case <-stop:
-						return
+				case <-ticker.C:
+					syncNow()
+				case <-stop:
+					return
 				}
 			}
 		}(stopPolling)
@@ -143,15 +143,15 @@ func main() {
 
 	if !cfgExists {
 		modal := tview.NewModal().
-		SetText("Configure Canvas now?\n\nThis is optional. You can skip it and use local JSON only.").
-		AddButtons([]string{"Configure Canvas", "Skip For Now"}).
-		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			if buttonLabel == "Configure Canvas" {
-				openCanvasSettings()
-				return
-			}
-			showDashboard()
-		})
+			SetText("Configure Canvas now?\n\nThis is optional. You can skip it and use local JSON only.").
+			AddButtons([]string{"Configure Canvas", "Skip For Now"}).
+			SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+				if buttonLabel == "Configure Canvas" {
+					openCanvasSettings()
+					return
+				}
+				showDashboard()
+			})
 
 		app.SetRoot(modal, true)
 	} else {
